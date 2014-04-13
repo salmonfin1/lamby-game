@@ -15,7 +15,6 @@ import com.salmon.lambygame.manager.ResourcesManager;
 public abstract class Player extends AnimatedSprite {
 	
 	private Body body;
-	private boolean canRun = false;
 	private int footContacts = 0;
 	
 	public Player(float pX, float pY, VertexBufferObjectManager vbo, Camera camera, PhysicsWorld physicsWorld) {
@@ -42,18 +41,8 @@ public abstract class Player extends AnimatedSprite {
 	            if (getY() <= 0) {                    
 	                onDie();
 	            }
-	            
-	            if (canRun){    
-	                body.setLinearVelocity(new Vector2(5, body.getLinearVelocity().y)); 
-	            }
 	        }
 	    });
-	}
-	
-	public void setRunning() {
-		canRun = true;
-		final long[] PLAYER_ANIMATE = new long[]{100,100,100};
-		animate(PLAYER_ANIMATE, 0, 2, true);
 	}
 	
 	public void jump() {
@@ -61,6 +50,18 @@ public abstract class Player extends AnimatedSprite {
 			return;
 		}
 		body.setLinearVelocity(new Vector2(body.getLinearVelocity().x,12));
+	}
+	
+	public void runLeft() {
+		body.setLinearVelocity(new Vector2(-5,body.getLinearVelocity().y));
+	}
+	
+	public void runRight() {
+		body.setLinearVelocity(new Vector2(5,body.getLinearVelocity().y));
+	}
+	
+	public void stopRunning() {
+		body.setLinearVelocity(new Vector2(0,body.getLinearVelocity().y));
 	}
 	
 	public void increaseFootContacts() {

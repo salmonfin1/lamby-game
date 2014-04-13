@@ -1,9 +1,9 @@
 package com.salmon.lambygame;
 
 import org.andengine.engine.Engine;
+import org.andengine.engine.Engine.EngineLock;
 import org.andengine.engine.LimitedFPSEngine;
 import org.andengine.engine.camera.BoundCamera;
-import org.andengine.engine.camera.Camera;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.engine.options.EngineOptions;
@@ -20,8 +20,7 @@ import com.salmon.lambygame.manager.SceneManager;
 
 public class GameActivity extends BaseGameActivity{
 	private BoundCamera camera;
-	private ResourcesManager resourcesManager;
-
+	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		camera = new BoundCamera(0, 0, 800, 480);
@@ -34,7 +33,7 @@ public class GameActivity extends BaseGameActivity{
 	@Override
 	public void onCreateResources(OnCreateResourcesCallback pOnCreateResourcesCallback) {
 		ResourcesManager.prepareManager(mEngine, this, camera, getVertexBufferObjectManager());
-	    resourcesManager = ResourcesManager.getInstance();
+	    ResourcesManager.getInstance();
 	    pOnCreateResourcesCallback.onCreateResourcesFinished();
 	}
 

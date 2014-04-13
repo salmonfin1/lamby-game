@@ -9,6 +9,8 @@ import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.sprite.ButtonSprite;
+import org.andengine.entity.sprite.ButtonSprite.OnClickListener;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
@@ -60,12 +62,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_COIN = "coin";
 	
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
-    private Player player;
-    
-    private boolean firstTouch = false;
+	private Player player;
     
     private Text gameOverText;
     private boolean gameOverDisplayed = false;
+    private boolean isTouched = false;
+    private String buttonPressed = null;
 	
 	@Override
 	public void createScene() {
@@ -74,6 +76,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 		createPhysics();
 		loadLevel(1);
 		createGameOverText();
+		createControllers();
 		setOnSceneTouchListener(this);
 	}
 
@@ -130,6 +133,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	            final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_WIDTH);
 	            final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_HEIGHT);
 	            camera.setBounds(0, 0, width, height);
+	            
 	            camera.setBoundsEnabled(true);
 
 	            return GameScene.this;
@@ -183,7 +187,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	            		}
 	            	};
 	            	levelObject = player;
-	            }
+	            } 
 	            else {
 	                throw new IllegalArgumentException();
 	            }
@@ -199,14 +203,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
-		if(pSceneTouchEvent.isActionDown()) {
-			if(!firstTouch) {
-				player.setRunning();
-				firstTouch = true;
-			} else {
-				player.jump();
-			}
-		}
 		return false;
 	}
 	
@@ -255,5 +251,71 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	    };
 	    return contactListener;
 	}
-
+	
+	private void createControllers() {
+		final ButtonSprite left = new ButtonSprite(20, 60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
+			@Override
+			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,	float pTouchAreaLocalY) {}
+		}) {
+			@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+				buttonPressed = "left";
+				if (pSceneTouchEvent.isActionDown()) {
+					isTouched = true;
+				} 
+				if (pSceneTouchEvent.isActionUp()) {
+					isTouched = false;
+				}
+				return true;
+			}
+		};
+		this.registerTouchArea(left);
+		left.setPosition(100, 80);
+		gameHUD.attachChild(left);
+		final ButtonSprite jump = new ButtonSprite(20,60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
+			@Override
+			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				player.jump();
+			}
+		});
+		this.registerTouchArea(jump);
+		jump.setPosition(400,80);
+		gameHUD.attachChild(jump);
+		final ButtonSprite right = new ButtonSprite(20, 60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
+			@Override
+			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				
+			}
+		}) {
+			@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+				buttonPressed = "right";
+				if (pSceneTouchEvent.isActionDown()) {
+					isTouched = true;
+				} 
+				if (pSceneTouchEvent.isActionUp()) {
+					isTouched = false;
+				}
+				return true;
+			}
+			@Override
+			protected void onManagedUpdate(float pSecondsElapsed) {
+				if (isTouched) {
+					if("right".equals(buttonPressed)) {
+						player.runRight();
+					} else {
+						player.runLeft();
+					}
+				} else {
+					player.stopRunning();
+				}
+				super.onManagedUpdate(pSecondsElapsed);
+			}
+		};
+		this.registerTouchArea(right);
+		right.setPosition(700, 80);
+		gameHUD.attachChild(right);
+		camera.setHUD(gameHUD);
+		
+	}
 }
