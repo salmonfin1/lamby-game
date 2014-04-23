@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<level width="800" height="400">    
-    <entity x="100" y="150" type="platform1"/>
-    <entity x="250" y="150" type="platform1"/>
-    <entity x="400" y="150" type="platform3"/>
-    <entity x="550" y="150" type="platform2"/>
-    <entity x="720" y="150" type="platform3"/>
-    <entity x="400" y="160" type="coin"/>
-    <entity x="500" y="160" type="coin"/>
-    <entity x="600" y="160" type="coin"/>
-    <entity x="100" y="170" type="player"/>
+<level width="2048" height="500">    
+    <entity x="0" y="300" type="hills"/>
+    <entity x="0" y="100" type="player"/>
 </level>

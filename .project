@@ -3,6 +3,7 @@
 	<name>LambyGame</name>
 	<comment></comment>
 	<projects>
+		<project>AndEngine-PhysicsEditor-Extension</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

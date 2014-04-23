@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<level width="1024" height="320">
+	<entity x="0" y="204" width="24" height="120"/>
+	<entity x="24" y="216" width="24" height="120"/>
+	<entity x="48" y="228" width="12" height="108"/>
+	<entity x="60" y="240" width="12" height="84"/>
+	<entity x="72" y="240" width="84" height="84"/>
+	<entity x="156" y="228" width="24" height="108"/>
+	<entity x="180" y="216" width="12" height="108"/>
+	<entity x="192" y="204" width="12" height="156"/>
+	<entity x="204" y="192" width="36" height="144"/>
+	<entity x="240" y="180" width="24" height="216"/>
+	<entity x="264" y="168" width="24" height="204"/>
+	<entity x="288" y="168" width="12" height="156"/>
+	<entity x="300" y="156" width="12" height="252"/>
+	<entity x="312" y="156" width="12" height="228"/>
+	<entity x="324" y="144" width="12" height="204"/>
+	<entity x="336" y="144" width="12" height="192"/>
+	<entity x="348" y="144" width="72" height="204"/>
+	<entity x="444" y="168" width="24" height="240"/>
+	<entity x="468" y="180" width="12" height="144"/>
+	<entity x="480" y="192" width="12" height="144"/>
+	<entity x="496" y="196" width="12" height="128"/>
+	<entity x="420" y="165" width="25" height="155"/>
+</level>

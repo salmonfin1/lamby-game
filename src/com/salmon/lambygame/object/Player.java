@@ -27,8 +27,7 @@ public abstract class Player extends AnimatedSprite {
 
 
 	private void createPhysics(final Camera camera, PhysicsWorld physicsWorld) {        
-	    body = PhysicsFactory.createBoxBody(physicsWorld, this, BodyType.DynamicBody, PhysicsFactory.createFixtureDef(0, 0, 0));
-
+	    body = PhysicsFactory.createBoxBody(physicsWorld, this, BodyType.DynamicBody, PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f));
 	    body.setUserData("player");
 	    body.setFixedRotation(true);
 	    
@@ -51,17 +50,18 @@ public abstract class Player extends AnimatedSprite {
 		}
 		body.setLinearVelocity(new Vector2(body.getLinearVelocity().x,12));
 	}
-	
-	public void runLeft() {
-		body.setLinearVelocity(new Vector2(-5,body.getLinearVelocity().y));
-	}
-	
+		
 	public void runRight() {
+		animate(new long[] {5,5}, 0, 1, true);
 		body.setLinearVelocity(new Vector2(5,body.getLinearVelocity().y));
 	}
 	
 	public void stopRunning() {
 		body.setLinearVelocity(new Vector2(0,body.getLinearVelocity().y));
+	}
+	
+	public void breathFire() {
+		 animate(new long[] {10,10}, 2, 3, true);
 	}
 	
 	public void increaseFootContacts() {

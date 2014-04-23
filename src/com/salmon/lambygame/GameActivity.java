@@ -1,7 +1,6 @@
 package com.salmon.lambygame;
 
 import org.andengine.engine.Engine;
-import org.andengine.engine.Engine.EngineLock;
 import org.andengine.engine.LimitedFPSEngine;
 import org.andengine.engine.camera.BoundCamera;
 import org.andengine.engine.handler.timer.ITimerCallback;
@@ -13,6 +12,7 @@ import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 import org.andengine.ui.activity.BaseGameActivity;
 
+import android.content.Context;
 import android.view.KeyEvent;
 
 import com.salmon.lambygame.manager.ResourcesManager;
@@ -20,6 +20,7 @@ import com.salmon.lambygame.manager.SceneManager;
 
 public class GameActivity extends BaseGameActivity{
 	private BoundCamera camera;
+	public static Context context;
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -27,6 +28,7 @@ public class GameActivity extends BaseGameActivity{
 		EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(800, 480),this.camera);
 		engineOptions.getAudioOptions().setNeedsMusic(true).setNeedsSound(true);
 		engineOptions.setWakeLockOptions(WakeLockOptions.SCREEN_ON);
+		context = getApplicationContext();
 		return engineOptions;
 	}
 
@@ -76,6 +78,9 @@ public class GameActivity extends BaseGameActivity{
 		}
 		return false;
 	}
-
+	
+	
+	
+	
 
 }

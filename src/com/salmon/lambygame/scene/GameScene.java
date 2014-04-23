@@ -3,12 +3,10 @@ package com.salmon.lambygame.scene;
 import java.io.IOException;
 
 import org.andengine.engine.camera.hud.HUD;
-import org.andengine.entity.IEntity;
-import org.andengine.entity.modifier.LoopEntityModifier;
-import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.ButtonSprite.OnClickListener;
 import org.andengine.entity.sprite.Sprite;
@@ -19,14 +17,12 @@ import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.util.SAXUtils;
-import org.andengine.util.adt.align.HorizontalAlign;
-import org.andengine.util.adt.color.Color;
-import org.andengine.util.level.EntityLoader;
-import org.andengine.util.level.constants.LevelConstants;
-import org.andengine.util.level.simple.SimpleLevelEntityLoaderData;
-import org.andengine.util.level.simple.SimpleLevelLoader;
-import org.xml.sax.Attributes;
+import org.andengine.util.HorizontalAlign;
+import org.andengine.util.color.Color;
+import org.andlabs.andengine.extension.physicsloader.PhysicsEditorLoader;
+import org.andlabs.andengine.extension.physicsloader.PhysicsEditorLoader.BodyChangedListener;
+
+import android.hardware.SensorManager;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -35,8 +31,8 @@ import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
+import com.salmon.lambygame.GameActivity;
 import com.salmon.lambygame.base.BaseScene;
 import com.salmon.lambygame.manager.SceneManager;
 import com.salmon.lambygame.manager.SceneManager.SceneType;
@@ -44,7 +40,7 @@ import com.salmon.lambygame.object.Player;
 
 
 
-public class GameScene extends BaseScene implements IOnSceneTouchListener {
+public class GameScene extends BaseScene implements IOnSceneTouchListener, BodyChangedListener {
 
 	private HUD gameHUD;
 	private Text scoreText;
@@ -59,9 +55,11 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM1 = "platform1";
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM2 = "platform2";
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM3 = "platform3";
+	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_HILLS = "hills";
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_COIN = "coin";
 	
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
+	private Sprite hillSprite;
 	private Player player;
     
     private Text gameOverText;
@@ -78,6 +76,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 		createGameOverText();
 		createControllers();
 		setOnSceneTouchListener(this);
+		
 	}
 
 	@Override
@@ -105,7 +104,6 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	private void createHUD() {
 		gameHUD = new HUD();
 		scoreText = new Text(20, 420, resourcesManager.font, "Score 0123456789", new TextOptions(HorizontalAlign.LEFT),vbom);
-		scoreText.setAnchorCenter(0, 0);
 		scoreText.setText("Score: 0");
 		gameHUD.attachChild(scoreText);
 		camera.setHUD(gameHUD);
@@ -117,89 +115,35 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	}
 	
 	private void createPhysics() {
-		physicsWorld = new FixedStepPhysicsWorld(60, new Vector2(0, -17), false);
+		physicsWorld = new FixedStepPhysicsWorld(60, new Vector2(0, SensorManager.GRAVITY_EARTH), false);
 		physicsWorld.setContactListener(contactListener());
 		registerUpdateHandler(physicsWorld);
 	}
 	
 	private void loadLevel(int levelID)	{
-	    final SimpleLevelLoader levelLoader = new SimpleLevelLoader(vbom);
-	    
-	    final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(0, 0.01f, 0.5f);
-	    
-	    levelLoader.registerEntityLoader(new EntityLoader<SimpleLevelEntityLoaderData>(LevelConstants.TAG_LEVEL){
-	        
-	    	public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException {
-	            final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_WIDTH);
-	            final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_HEIGHT);
-	            camera.setBounds(0, 0, width, height);
-	            
-	            camera.setBoundsEnabled(true);
-
-	            return GameScene.this;
-	        }
-	    });
-	    
-	    levelLoader.registerEntityLoader(new EntityLoader<SimpleLevelEntityLoaderData>(TAG_ENTITY) {
-	        public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException {
-	            final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_X);
-	            final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_Y);
-	            final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_TYPE);
-	            
-	            final Sprite levelObject;
-	            
-	            if (type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM1)) {
-	                levelObject = new Sprite(x, y, resourcesManager.platform1_region, vbom);
-	                PhysicsFactory.createBoxBody(physicsWorld, levelObject, BodyType.StaticBody, FIXTURE_DEF).setUserData("platform1");
-	            } 
-	            else if (type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM2)) {
-	                levelObject = new Sprite(x, y, resourcesManager.platform2_region, vbom);
-	                final Body body = PhysicsFactory.createBoxBody(physicsWorld, levelObject, BodyType.StaticBody, FIXTURE_DEF);
-	                body.setUserData("platform2");
-	                physicsWorld.registerPhysicsConnector(new PhysicsConnector(levelObject, body, true, false));
-	            }
-	            else if (type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM3)) {
-	                levelObject = new Sprite(x, y, resourcesManager.platform3_region, vbom);
-	                final Body body = PhysicsFactory.createBoxBody(physicsWorld, levelObject, BodyType.StaticBody, FIXTURE_DEF);
-	                body.setUserData("platform3");
-	                physicsWorld.registerPhysicsConnector(new PhysicsConnector(levelObject, body, true, false));
-	            }
-	            else if (type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_COIN)) {
-	                levelObject = new Sprite(x, y, resourcesManager.coin_region, vbom) {
-	                    @Override
-	                    protected void onManagedUpdate(float pSecondsElapsed) {
-	                        super.onManagedUpdate(pSecondsElapsed);
-	                        if(player.collidesWith(this)) {
-	                        	addToScore(10);
-	                        	this.setVisible(false);
-	                        	this.setIgnoreUpdate(true);
-	                        }
-	                    }
-	                };
-	                levelObject.registerEntityModifier(new LoopEntityModifier(new ScaleModifier(1, 1, 1.3f)));
-	            } else if (type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
-	            	player = new Player(x,y,vbom,camera,physicsWorld) {
-	            		@Override
-	            		public void onDie() {
-	            			if(!gameOverDisplayed) {
-	            				displayGameOverText();
-	            			}
-	            		}
-	            	};
-	            	levelObject = player;
-	            } 
-	            else {
-	                throw new IllegalArgumentException();
-	            }
-
-	            levelObject.setCullingEnabled(true);
-
-	            return levelObject;
-	        }
-	    });
-
-	    levelLoader.loadLevelFromAsset(activity.getAssets(), "level/" + levelID + ".lvl");
-	}
+	    camera.setBounds(0, 0, 2048, 500);
+	    camera.setBoundsEnabled(true);
+	    hillSprite = new Sprite(0,300 , resourcesManager.hill_region, vbom);
+	    this.attachChild(hillSprite);
+	    PhysicsEditorLoader loader = new PhysicsEditorLoader();
+	    loader.setAssetBasePath("xml/");
+        	try {
+        		loader.load(GameActivity.context, physicsWorld, "level1.xml", hillSprite, false, false);
+        		player = new Player(10,100,vbom,camera,physicsWorld) {
+            		@Override
+            		public void onDie() {
+            			if(!gameOverDisplayed) {
+            				displayGameOverText();
+            			}
+            		}
+            	};
+            	this.attachChild(player);
+            	loader.reset();
+            	loader.load(GameActivity.context, physicsWorld, "lamb.xml", player, true, false);
+        	} catch (IOException e) { 
+        		e.printStackTrace();
+        	}
+    }
 
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
@@ -253,13 +197,13 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	}
 	
 	private void createControllers() {
-		final ButtonSprite left = new ButtonSprite(20, 60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
+		final ButtonSprite breathFire = new ButtonSprite(20, 60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
 			@Override
 			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,	float pTouchAreaLocalY) {}
 		}) {
 			@Override
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-				buttonPressed = "left";
+				buttonPressed = "breathFire";
 				if (pSceneTouchEvent.isActionDown()) {
 					isTouched = true;
 				} 
@@ -269,9 +213,9 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 				return true;
 			}
 		};
-		this.registerTouchArea(left);
-		left.setPosition(100, 80);
-		gameHUD.attachChild(left);
+		this.registerTouchArea(breathFire);
+		breathFire.setPosition(100, 80);
+		gameHUD.attachChild(breathFire);
 		final ButtonSprite jump = new ButtonSprite(20,60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
 			@Override
 			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX, float pTouchAreaLocalY) {
@@ -303,11 +247,12 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 				if (isTouched) {
 					if("right".equals(buttonPressed)) {
 						player.runRight();
-					} else {
-						player.runLeft();
+					} else if("breathFire".equals(buttonPressed)) {
+						player.breathFire();
 					}
 				} else {
 					player.stopRunning();
+					player.stopAnimation(0);
 				}
 				super.onManagedUpdate(pSecondsElapsed);
 			}
@@ -317,5 +262,15 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 		gameHUD.attachChild(right);
 		camera.setHUD(gameHUD);
 		
+	}
+
+	@Override
+	public IAreaShape onBodyChanged(String pBodyName) {
+		if (pBodyName.equals("multi_fixture_asset")) {
+			return hillSprite;
+		} else if (pBodyName.equals("player")) {
+			return player;
+		}
+		return null;
 	}
 }
