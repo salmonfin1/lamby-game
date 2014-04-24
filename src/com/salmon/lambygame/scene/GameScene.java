@@ -116,20 +116,21 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, BodyC
 	
 	private void createPhysics() {
 		physicsWorld = new FixedStepPhysicsWorld(60, new Vector2(0, SensorManager.GRAVITY_EARTH), false);
-		physicsWorld.setContactListener(contactListener());
+//		physicsWorld.setContactListener(contactListener());
 		registerUpdateHandler(physicsWorld);
 	}
 	
 	private void loadLevel(int levelID)	{
-	    camera.setBounds(0, 0, 2048, 500);
+	    camera.setBounds(0, 0, 1024, 1024);
 	    camera.setBoundsEnabled(true);
 	    hillSprite = new Sprite(0,300 , resourcesManager.hill_region, vbom);
+	    
 	    this.attachChild(hillSprite);
 	    PhysicsEditorLoader loader = new PhysicsEditorLoader();
 	    loader.setAssetBasePath("xml/");
         	try {
         		loader.load(GameActivity.context, physicsWorld, "level1.xml", hillSprite, false, false);
-        		player = new Player(10,100,vbom,camera,physicsWorld) {
+        		player = new Player(60,100,vbom,camera,physicsWorld) {
             		@Override
             		public void onDie() {
             			if(!gameOverDisplayed) {
@@ -140,6 +141,8 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, BodyC
             	this.attachChild(player);
             	loader.reset();
             	loader.load(GameActivity.context, physicsWorld, "lamb.xml", player, true, false);
+            	player.setBody(loader.getBody("player"));
+            	
         	} catch (IOException e) { 
         		e.printStackTrace();
         	}
@@ -161,40 +164,40 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, BodyC
 		gameOverDisplayed = true;
 	}
 	
-	private ContactListener contactListener() {
-	    ContactListener contactListener = new ContactListener() {
-	        public void beginContact(Contact contact) {
-	            final Fixture x1 = contact.getFixtureA();
-	            final Fixture x2 = contact.getFixtureB();
-
-	            if (x1.getBody().getUserData() != null && x2.getBody().getUserData() != null) {
-	                if (x2.getBody().getUserData().equals("player")) {
-	                    player.increaseFootContacts();
-	                }
-	            }
-	        }
-
-	        public void endContact(Contact contact) {
-	            final Fixture x1 = contact.getFixtureA();
-	            final Fixture x2 = contact.getFixtureB();
-
-	            if (x1.getBody().getUserData() != null && x2.getBody().getUserData() != null) {
-	                if (x2.getBody().getUserData().equals("player")) {
-	                    player.decreaseFootContacts();
-	                }
-	            }
-	        }
-
-	        public void preSolve(Contact contact, Manifold oldManifold) {
-
-	        }
-
-	        public void postSolve(Contact contact, ContactImpulse impulse) {
-
-	        }
-	    };
-	    return contactListener;
-	}
+//	private ContactListener contactListener() {
+//	    ContactListener contactListener = new ContactListener() {
+//	        public void beginContact(Contact contact) {
+//	            final Fixture x1 = contact.getFixtureA();
+//	            final Fixture x2 = contact.getFixtureB();
+//
+//	            if (x1.getBody().getUserData() != null && x2.getBody().getUserData() != null) {
+//	                if (x2.getBody().getUserData().equals("player")) {
+//	                    player.increaseFootContacts();
+//	                }
+//	            }
+//	        }
+//
+//	        public void endContact(Contact contact) {
+//	            final Fixture x1 = contact.getFixtureA();
+//	            final Fixture x2 = contact.getFixtureB();
+//
+//	            if (x1.getBody().getUserData() != null && x2.getBody().getUserData() != null) {
+//	                if (x2.getBody().getUserData().equals("player")) {
+//	                    player.decreaseFootContacts();
+//	                }
+//	            }
+//	        }
+//
+//	        public void preSolve(Contact contact, Manifold oldManifold) {
+//
+//	        }
+//
+//	        public void postSolve(Contact contact, ContactImpulse impulse) {
+//
+//	        }
+//	    };
+//	    return contactListener;
+//	}
 	
 	private void createControllers() {
 		final ButtonSprite breathFire = new ButtonSprite(20, 60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
@@ -214,7 +217,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, BodyC
 			}
 		};
 		this.registerTouchArea(breathFire);
-		breathFire.setPosition(100, 80);
+		breathFire.setPosition(10, 300);
 		gameHUD.attachChild(breathFire);
 		final ButtonSprite jump = new ButtonSprite(20,60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
 			@Override
@@ -223,7 +226,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, BodyC
 			}
 		});
 		this.registerTouchArea(jump);
-		jump.setPosition(400,80);
+		jump.setPosition(300,300);
 		gameHUD.attachChild(jump);
 		final ButtonSprite right = new ButtonSprite(20, 60, resourcesManager.buttons.getTextureRegion(0), resourcesManager.buttons.getTextureRegion(1), this.vbom, new OnClickListener() {
 			@Override
@@ -258,7 +261,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener, BodyC
 			}
 		};
 		this.registerTouchArea(right);
-		right.setPosition(700, 80);
+		right.setPosition(600, 300);
 		gameHUD.attachChild(right);
 		camera.setHUD(gameHUD);
 		

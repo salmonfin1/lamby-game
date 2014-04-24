@@ -24,10 +24,11 @@ public class GameActivity extends BaseGameActivity{
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
-		camera = new BoundCamera(0, 0, 800, 480);
+		camera = new BoundCamera(0, 0, 1024, 500);
 		EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(800, 480),this.camera);
 		engineOptions.getAudioOptions().setNeedsMusic(true).setNeedsSound(true);
 		engineOptions.setWakeLockOptions(WakeLockOptions.SCREEN_ON);
+//		engineOptions.getTouchOptions().setTouchEventIntervalMilliseconds(1);
 		context = getApplicationContext();
 		return engineOptions;
 	}

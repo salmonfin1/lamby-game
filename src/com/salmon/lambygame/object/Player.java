@@ -19,36 +19,13 @@ public abstract class Player extends AnimatedSprite {
 	
 	public Player(float pX, float pY, VertexBufferObjectManager vbo, Camera camera, PhysicsWorld physicsWorld) {
         super(pX, pY, ResourcesManager.getInstance().player_region, vbo);
-        createPhysics(camera, physicsWorld);
         camera.setChaseEntity(this);
     }
 	
 	public abstract void onDie();
 
-
-	private void createPhysics(final Camera camera, PhysicsWorld physicsWorld) {        
-	    body = PhysicsFactory.createBoxBody(physicsWorld, this, BodyType.DynamicBody, PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f));
-	    body.setUserData("player");
-	    body.setFixedRotation(true);
-	    
-	    physicsWorld.registerPhysicsConnector(new PhysicsConnector(this, body, true, false) {
-	        @Override
-	        public void onUpdate(float pSecondsElapsed) {
-	            super.onUpdate(pSecondsElapsed);
-	            camera.onUpdate(0.1f);
-	            
-	            if (getY() <= 0) {                    
-	                onDie();
-	            }
-	        }
-	    });
-	}
-	
 	public void jump() {
-		if(footContacts < 1) {
-			return;
-		}
-		body.setLinearVelocity(new Vector2(body.getLinearVelocity().x,12));
+		body.setLinearVelocity(new Vector2(body.getLinearVelocity().x,-12));
 	}
 		
 	public void runRight() {
@@ -64,12 +41,8 @@ public abstract class Player extends AnimatedSprite {
 		 animate(new long[] {10,10}, 2, 3, true);
 	}
 	
-	public void increaseFootContacts() {
-		footContacts++;
-	}
-	
-	public void decreaseFootContacts() {
-		footContacts--;
+	public void setBody(Body body) {
+		this.body = body;
 	}
 
 }
